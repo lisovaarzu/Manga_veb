@@ -6,11 +6,17 @@ $error = '';
 $success = '';
 
 if (isAuth()) {
-    header('Location: /');
+    if (isAdmin()) {
+        header('Location: /admin/index.php');
+    } else {
+        header('Location: /');
+    }
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_check();
+
     $name = trim($_POST['name']);
     $email = trim($_POST['email']);
     $password = $_POST['password'];
@@ -44,26 +50,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+$pageTitle = 'Регистрация — MangaShop';
 ?>
 
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Регистрация — MangaShop</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
-</head>
-<body>
-
-<header class="header">
-    <a href="/" class="logo">MangaShop</a>
-
-    <nav class="nav">
-        <a href="/">Главная</a>
-        <a href="/catalog.php">Каталог</a>
-        <a href="/login.php">Вход</a>
-    </nav>
-</header>
+<?php require_once __DIR__ . '/includes/header.php'; ?>
 
 <main class="form-page">
     <div class="form-box">
@@ -79,6 +70,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form method="post">
+            <?php echo csrf_field(); ?>
+
             <div class="form-group">
                 <label>Имя</label>
                 <input class="form-control" type="text" name="name" value="<?php echo isset($_POST['name']) ? e($_POST['name']) : ''; ?>">
@@ -106,5 +99,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </main>
 
-</body>
-</html>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>

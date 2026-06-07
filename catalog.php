@@ -32,39 +32,11 @@ $sql .= " ORDER BY products.id DESC";
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $products = $stmt->fetchAll();
+
+$pageTitle = 'Каталог — MangaShop';
 ?>
 
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Каталог — MangaShop</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
-</head>
-<body>
-
-<header class="header">
-    <a href="/" class="logo">MangaShop</a>
-
-    <nav class="nav">
-        <a href="/">Главная</a>
-        <a href="/catalog.php">Каталог</a>
-
-        <?php if (isAuth()): ?>
-            <a href="/cart.php">Корзина</a>
-            <a href="/orders.php">Мои заказы</a>
-
-            <?php if (isAdmin()): ?>
-                <a href="/admin/index.php">Админка</a>
-            <?php endif; ?>
-
-            <a href="/logout.php">Выход</a>
-        <?php else: ?>
-            <a href="/login.php">Вход</a>
-            <a href="/register.php">Регистрация</a>
-        <?php endif; ?>
-    </nav>
-</header>
+<?php require_once __DIR__ . '/includes/header.php'; ?>
 
 <main class="container">
     <div class="page-title">
@@ -102,10 +74,11 @@ $products = $stmt->fetchAll();
     <?php if (count($products) > 0): ?>
         <div class="product-grid">
             <?php foreach ($products as $product): ?>
+                <?php $imageUrl = product_image_url($product['image']); ?>
                 <div class="product-card">
                     <div class="product-image">
-                        <?php if (!empty($product['image'])): ?>
-                            <img src="/uploads/products/<?php echo e($product['image']); ?>" alt="<?php echo e($product['title']); ?>">
+                        <?php if ($imageUrl): ?>
+                            <img src="<?php echo e($imageUrl); ?>" alt="<?php echo e($product['title']); ?>">
                         <?php else: ?>
                             <span>Нет изображения</span>
                         <?php endif; ?>
@@ -135,5 +108,4 @@ $products = $stmt->fetchAll();
     <?php endif; ?>
 </main>
 
-</body>
-</html>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>

@@ -2,7 +2,7 @@
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/auth.php';
 
-requireAuth();
+requireCustomer();
 
 $user_id = $_SESSION['user']['id'];
 $error = '';
@@ -38,72 +38,106 @@ foreach ($items as $item) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $error === '') {
+    csrf_check();
+
     try {
         $pdo->beginTransaction();
 
         $stmt = $pdo->prepare("
-            INSERT INTO orders (user_id, total_price, status)
-            VALUES (?, ?, 'Новый')
+            SELECT
+                cart_items.id AS cart_id,
+                cart_items.quantity,
+                products.id AS product_id,
+                products.title,
+                products.price,
+                products.stock
+            FROM cart_items
+            INNER JOIN products ON cart_items.product_id = products.id
+            WHERE cart_items.user_id = ?
+            FOR UPDATE
         ");
-        $stmt->execute(array($user_id, $total));
+        $stmt->execute(array($user_id));
+        $items = $stmt->fetchAll();
 
-        $order_id = $pdo->lastInsertId();
-
-        foreach ($items as $item) {
-            $stmt = $pdo->prepare("
-                INSERT INTO order_items (order_id, product_id, title, price, quantity)
-                VALUES (?, ?, ?, ?, ?)
-            ");
-            $stmt->execute(array(
-                $order_id,
-                $item['product_id'],
-                $item['title'],
-                $item['price'],
-                $item['quantity']
-            ));
-
-            $stmt = $pdo->prepare("
-                UPDATE products
-                SET stock = stock - ?
-                WHERE id = ?
-            ");
-            $stmt->execute(array($item['quantity'], $item['product_id']));
+        if (count($items) === 0) {
+            $pdo->rollBack();
+            header('Location: /cart.php');
+            exit;
         }
 
-        $stmt = $pdo->prepare("DELETE FROM cart_items WHERE user_id = ?");
-        $stmt->execute(array($user_id));
+        $total = 0;
+        $stockChanged = false;
 
-        $pdo->commit();
+        foreach ($items as $item) {
+            if ($item['stock'] < $item['quantity']) {
+                $stockChanged = true;
+                break;
+            }
 
-        header('Location: /orders.php?success=1');
-        exit;
+            $total += $item['price'] * $item['quantity'];
+        }
+
+        if (!$stockChanged) {
+            $stmt = $pdo->prepare("
+                INSERT INTO orders (user_id, total_price, status)
+                VALUES (?, ?, 'Новый')
+            ");
+            $stmt->execute(array($user_id, $total));
+
+            $order_id = $pdo->lastInsertId();
+
+            foreach ($items as $item) {
+                $stmt = $pdo->prepare("
+                    INSERT INTO order_items (order_id, product_id, title, price, quantity)
+                    VALUES (?, ?, ?, ?, ?)
+                ");
+                $stmt->execute(array(
+                    $order_id,
+                    $item['product_id'],
+                    $item['title'],
+                    $item['price'],
+                    $item['quantity']
+                ));
+
+                $stmt = $pdo->prepare("
+                    UPDATE products
+                    SET stock = stock - ?
+                    WHERE id = ? AND stock >= ?
+                ");
+                $stmt->execute(array($item['quantity'], $item['product_id'], $item['quantity']));
+
+                if ($stmt->rowCount() !== 1) {
+                    $stockChanged = true;
+                    break;
+                }
+            }
+        }
+
+        if ($stockChanged) {
+            $pdo->rollBack();
+            $error = 'Пока вы оформляли заказ, остатки изменились. Проверьте корзину ещё раз.';
+        } else {
+            $stmt = $pdo->prepare("DELETE FROM cart_items WHERE user_id = ?");
+            $stmt->execute(array($user_id));
+
+            $pdo->commit();
+
+            header('Location: /orders.php?success=1');
+            exit;
+        }
     } catch (Exception $e) {
-        $pdo->rollBack();
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
         $error = 'Ошибка оформления заказа. Попробуйте ещё раз.';
     }
 }
+
+$pageTitle = 'Оформление заказа — MangaShop';
 ?>
 
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Оформление заказа — MangaShop</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
-</head>
-<body>
-
-<header class="header">
-    <a href="/" class="logo">MangaShop</a>
-
-    <nav class="nav">
-        <a href="/">Главная</a>
-        <a href="/catalog.php">Каталог</a>
-        <a href="/cart.php">Корзина</a>
-        <a href="/orders.php">Мои заказы</a>
-        <a href="/logout.php">Выход</a>
-    </nav>
-</header>
+<?php require_once __DIR__ . '/includes/header.php'; ?>
 
 <main class="container">
     <div class="page-title">
@@ -149,11 +183,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $error === '') {
             </div>
 
             <form method="post">
+                <?php echo csrf_field(); ?>
                 <button class="btn full-btn" type="submit">Подтвердить заказ</button>
             </form>
         </aside>
     </div>
 </main>
 
-</body>
-</html>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>

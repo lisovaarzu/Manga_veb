@@ -27,39 +27,11 @@ $popularProducts = $pdo->query("
     ORDER BY products.price DESC
     LIMIT 4
 ")->fetchAll();
+
+$pageTitle = 'MangaShop — магазин манги';
 ?>
 
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>MangaShop — магазин манги</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
-</head>
-<body>
-
-<header class="header">
-    <a href="/" class="logo">MangaShop</a>
-
-    <nav class="nav">
-        <a href="/">Главная</a>
-        <a href="/catalog.php">Каталог</a>
-
-        <?php if (isAuth()): ?>
-            <a href="/cart.php">Корзина</a>
-            <a href="/orders.php">Мои заказы</a>
-
-            <?php if (isAdmin()): ?>
-                <a href="/admin/index.php">Админка</a>
-            <?php endif; ?>
-
-            <a href="/logout.php">Выход</a>
-        <?php else: ?>
-            <a href="/login.php">Вход</a>
-            <a href="/register.php">Регистрация</a>
-        <?php endif; ?>
-    </nav>
-</header>
+<?php require_once __DIR__ . '/includes/header.php'; ?>
 
 <section class="hero">
     <div>
@@ -108,10 +80,11 @@ $popularProducts = $pdo->query("
 
         <div class="product-grid">
             <?php foreach ($popularProducts as $product): ?>
+                <?php $imageUrl = product_image_url($product['image']); ?>
                 <div class="product-card">
                     <div class="product-image">
-                        <?php if (!empty($product['image'])): ?>
-                            <img src="/uploads/products/<?php echo e($product['image']); ?>" alt="<?php echo e($product['title']); ?>">
+                        <?php if ($imageUrl): ?>
+                            <img src="<?php echo e($imageUrl); ?>" alt="<?php echo e($product['title']); ?>">
                         <?php else: ?>
                             <span>Нет изображения</span>
                         <?php endif; ?>
@@ -139,10 +112,11 @@ $popularProducts = $pdo->query("
 
         <div class="product-grid">
             <?php foreach ($newProducts as $product): ?>
+                <?php $imageUrl = product_image_url($product['image']); ?>
                 <div class="product-card">
                     <div class="product-image">
-                        <?php if (!empty($product['image'])): ?>
-                            <img src="/uploads/products/<?php echo e($product['image']); ?>" alt="<?php echo e($product['title']); ?>">
+                        <?php if ($imageUrl): ?>
+                            <img src="<?php echo e($imageUrl); ?>" alt="<?php echo e($product['title']); ?>">
                         <?php else: ?>
                             <span>Нет изображения</span>
                         <?php endif; ?>
@@ -161,5 +135,4 @@ $popularProducts = $pdo->query("
     </section>
 </main>
 
-</body>
-</html>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>

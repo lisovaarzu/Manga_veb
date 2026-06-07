@@ -14,13 +14,7 @@ csrf_check();
 $order_id = isset($_POST['order_id']) ? (int)$_POST['order_id'] : 0;
 $status = isset($_POST['status']) ? trim($_POST['status']) : '';
 
-$allowedStatuses = array(
-    'Новый',
-    'В обработке',
-    'Отправлен',
-    'Завершён',
-    'Отменён'
-);
+$allowedStatuses = getOrderStatuses();
 
 if ($order_id <= 0 || !in_array($status, $allowedStatuses)) {
     http_response_code(400);

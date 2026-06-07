@@ -8,6 +8,7 @@ Thumbs.db
 
 uploads/products/*
 !uploads/products/.gitkeep
+!uploads/products/*.svg
 
 node_modules/
 vendor/

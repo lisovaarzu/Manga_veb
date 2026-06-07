@@ -2,11 +2,13 @@
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/auth.php';
 
-requireAuth();
+requireCustomer();
 
 $user_id = $_SESSION['user']['id'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_check();
+
     $action = isset($_POST['action']) ? $_POST['action'] : '';
     $cart_id = isset($_POST['cart_id']) ? (int)$_POST['cart_id'] : 0;
 
@@ -27,16 +29,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $item = $stmt->fetch();
 
         if ($item) {
-            if ($quantity > $item['stock']) {
-                $quantity = $item['stock'];
-            }
+            if ($item['stock'] < 1) {
+                $stmt = $pdo->prepare("
+                    DELETE FROM cart_items
+                    WHERE id = ? AND user_id = ?
+                ");
+                $stmt->execute(array($cart_id, $user_id));
+            } else {
+                if ($quantity > $item['stock']) {
+                    $quantity = $item['stock'];
+                }
 
-            $stmt = $pdo->prepare("
-                UPDATE cart_items
-                SET quantity = ?
-                WHERE id = ? AND user_id = ?
-            ");
-            $stmt->execute(array($quantity, $cart_id, $user_id));
+                $stmt = $pdo->prepare("
+                    UPDATE cart_items
+                    SET quantity = ?
+                    WHERE id = ? AND user_id = ?
+                ");
+                $stmt->execute(array($quantity, $cart_id, $user_id));
+            }
         }
     }
 
@@ -75,33 +85,11 @@ $total = 0;
 foreach ($items as $item) {
     $total += $item['price'] * $item['quantity'];
 }
+
+$pageTitle = 'Корзина — MangaShop';
 ?>
 
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Корзина — MangaShop</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
-</head>
-<body>
-
-<header class="header">
-    <a href="/" class="logo">MangaShop</a>
-
-    <nav class="nav">
-        <a href="/">Главная</a>
-        <a href="/catalog.php">Каталог</a>
-        <a href="/cart.php">Корзина</a>
-        <a href="/orders.php">Мои заказы</a>
-
-        <?php if (isAdmin()): ?>
-            <a href="/admin/index.php">Админка</a>
-        <?php endif; ?>
-
-        <a href="/logout.php">Выход</a>
-    </nav>
-</header>
+<?php require_once __DIR__ . '/includes/header.php'; ?>
 
 <main class="container">
     <div class="page-title">
@@ -117,10 +105,11 @@ foreach ($items as $item) {
         <div class="cart-layout">
             <div class="cart-list">
                 <?php foreach ($items as $item): ?>
+                    <?php $imageUrl = product_image_url($item['image']); ?>
                     <div class="cart-item">
                         <div class="cart-image">
-                            <?php if (!empty($item['image'])): ?>
-                                <img src="/uploads/products/<?php echo e($item['image']); ?>" alt="<?php echo e($item['title']); ?>">
+                            <?php if ($imageUrl): ?>
+                                <img src="<?php echo e($imageUrl); ?>" alt="<?php echo e($item['title']); ?>">
                             <?php else: ?>
                                 <span>Нет изображения</span>
                             <?php endif; ?>
@@ -134,7 +123,11 @@ foreach ($items as $item) {
                             </h3>
 
                             <p><?php echo e($item['author']); ?></p>
-                            <span class="badge pink">В наличии: <?php echo (int)$item['stock']; ?></span>
+                            <?php if ($item['stock'] > 0): ?>
+                                <span class="badge pink">В наличии: <?php echo (int)$item['stock']; ?></span>
+                            <?php else: ?>
+                                <span class="badge red">Товар закончился</span>
+                            <?php endif; ?>
 
                             <div class="cart-price">
                                 <?php echo e($item['price']); ?> ₽
@@ -142,24 +135,28 @@ foreach ($items as $item) {
                         </div>
 
                         <div class="cart-controls">
-                            <form method="post" class="cart-form">
-                                <input type="hidden" name="action" value="update">
-                                <input type="hidden" name="cart_id" value="<?php echo $item['cart_id']; ?>">
+                            <?php if ($item['stock'] > 0): ?>
+                                <form method="post" class="cart-form">
+                                    <?php echo csrf_field(); ?>
+                                    <input type="hidden" name="action" value="update">
+                                    <input type="hidden" name="cart_id" value="<?php echo $item['cart_id']; ?>">
 
-                                <label>Кол-во</label>
-                                <input 
-                                    class="form-control" 
-                                    type="number" 
-                                    name="quantity" 
-                                    value="<?php echo (int)$item['quantity']; ?>" 
-                                    min="1" 
-                                    max="<?php echo (int)$item['stock']; ?>"
-                                >
+                                    <label>Кол-во</label>
+                                    <input
+                                        class="form-control"
+                                        type="number"
+                                        name="quantity"
+                                        value="<?php echo (int)$item['quantity']; ?>"
+                                        min="1"
+                                        max="<?php echo (int)$item['stock']; ?>"
+                                    >
 
-                                <button class="btn small" type="submit">Обновить</button>
-                            </form>
+                                    <button class="btn small" type="submit">Обновить</button>
+                                </form>
+                            <?php endif; ?>
 
                             <form method="post">
+                                <?php echo csrf_field(); ?>
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="cart_id" value="<?php echo $item['cart_id']; ?>">
                                 <button class="btn small btn-danger" type="submit">Удалить</button>
@@ -192,5 +189,4 @@ foreach ($items as $item) {
     <?php endif; ?>
 </main>
 
-</body>
-</html>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>

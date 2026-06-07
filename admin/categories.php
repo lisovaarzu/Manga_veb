@@ -8,6 +8,8 @@ $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_check();
+
     $action = isset($_POST['action']) ? $_POST['action'] : '';
 
     if ($action === 'create') {
@@ -59,28 +61,12 @@ $categories = $pdo->query("
     FROM categories
     ORDER BY id DESC
 ")->fetchAll();
+
+$pageTitle = 'Категории — Админка MangaShop';
+$headerLinks = getAdminHeaderLinks();
 ?>
 
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Категории — Админка MangaShop</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
-</head>
-<body>
-
-<header class="header">
-    <a href="/" class="logo">MangaShop</a>
-
-    <nav class="nav">
-        <a href="/admin/index.php">Админка</a>
-        <a href="/admin/products.php">Товары</a>
-        <a href="/admin/categories.php">Категории</a>
-        <a href="/admin/orders_live.php">Заказы Live</a>
-        <a href="/logout.php">Выход</a>
-    </nav>
-</header>
+<?php require_once __DIR__ . '/../includes/header.php'; ?>
 
 <main class="container">
     <div class="page-title">
@@ -103,6 +89,7 @@ $categories = $pdo->query("
             <h2>Добавить категорию</h2>
 
             <form method="post">
+                <?php echo csrf_field(); ?>
                 <input type="hidden" name="action" value="create">
 
                 <div class="form-group">
@@ -127,6 +114,7 @@ $categories = $pdo->query("
                     <?php foreach ($categories as $category): ?>
                         <div class="admin-list-item">
                             <form method="post">
+                                <?php echo csrf_field(); ?>
                                 <input type="hidden" name="action" value="update">
                                 <input type="hidden" name="id" value="<?php echo $category['id']; ?>">
 
@@ -146,6 +134,7 @@ $categories = $pdo->query("
                             </form>
 
                             <form method="post" onsubmit="return confirm('Удалить категорию? Все товары этой категории тоже удалятся.');">
+                                <?php echo csrf_field(); ?>
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="<?php echo $category['id']; ?>">
                                 <button class="btn small btn-danger" type="submit">Удалить</button>
@@ -160,5 +149,4 @@ $categories = $pdo->query("
     </div>
 </main>
 
-</body>
-</html>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

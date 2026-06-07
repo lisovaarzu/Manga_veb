@@ -34,6 +34,7 @@ $stmt->execute($params);
 $products = $stmt->fetchAll();
 
 $pageTitle = 'Товары — Админка MangaShop';
+$headerLinks = getAdminHeaderLinks();
 ?>
 
 <?php require_once __DIR__ . '/../includes/header.php'; ?>
@@ -84,14 +85,15 @@ $pageTitle = 'Товары — Админка MangaShop';
 
                 <tbody>
                     <?php foreach ($products as $product): ?>
+                        <?php $imageUrl = product_image_url($product['image']); ?>
                         <tr>
                             <td><?php echo (int)$product['id']; ?></td>
 
                             <td>
-                                <?php if (!empty($product['image'])): ?>
+                                <?php if ($imageUrl): ?>
                                     <img
                                         class="admin-thumb"
-                                        src="/uploads/products/<?php echo e($product['image']); ?>"
+                                        src="<?php echo e($imageUrl); ?>"
                                         alt="<?php echo e($product['title']); ?>"
                                     >
                                 <?php else: ?>

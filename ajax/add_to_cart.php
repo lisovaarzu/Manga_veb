@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/auth.php';
 
-requireAuth();
+requireCustomer();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: /catalog.php');

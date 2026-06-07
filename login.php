@@ -5,11 +5,17 @@ require_once __DIR__ . '/includes/auth.php';
 $error = '';
 
 if (isAuth()) {
-    header('Location: /');
+    if (isAdmin()) {
+        header('Location: /admin/index.php');
+    } else {
+        header('Location: /');
+    }
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_check();
+
     $email = trim($_POST['email']);
     $password = $_POST['password'];
 
@@ -21,6 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch();
 
         if ($user && password_verify($password, $user['password'])) {
+            session_regenerate_id(true);
+
             $_SESSION['user'] = array(
                 'id' => $user['id'],
                 'name' => $user['name'],
@@ -39,26 +47,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+$pageTitle = 'Вход — MangaShop';
 ?>
 
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Вход — MangaShop</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
-</head>
-<body>
-
-<header class="header">
-    <a href="/" class="logo">MangaShop</a>
-
-    <nav class="nav">
-        <a href="/">Главная</a>
-        <a href="/catalog.php">Каталог</a>
-        <a href="/register.php">Регистрация</a>
-    </nav>
-</header>
+<?php require_once __DIR__ . '/includes/header.php'; ?>
 
 <main class="form-page">
     <div class="form-box">
@@ -70,6 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form method="post">
+            <?php echo csrf_field(); ?>
+
             <div class="form-group">
                 <label>Email</label>
                 <input class="form-control" type="email" name="email" value="<?php echo isset($_POST['email']) ? e($_POST['email']) : ''; ?>">
@@ -87,5 +82,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </main>
 
-</body>
-</html>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>

@@ -2,7 +2,7 @@
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/auth.php';
 
-requireAuth();
+requireCustomer();
 
 $user_id = $_SESSION['user']['id'];
 
@@ -18,45 +18,34 @@ $orders = $stmt->fetchAll();
 $orderItems = array();
 
 if (count($orders) > 0) {
+    $orderIds = array();
+
     foreach ($orders as $order) {
-        $stmt = $pdo->prepare("
-            SELECT *
-            FROM order_items
-            WHERE order_id = ?
-        ");
-        $stmt->execute(array($order['id']));
-        $orderItems[$order['id']] = $stmt->fetchAll();
+        $orderIds[] = (int)$order['id'];
+        $orderItems[$order['id']] = array();
+    }
+
+    $placeholders = implode(', ', array_fill(0, count($orderIds), '?'));
+
+    $stmt = $pdo->prepare("
+        SELECT *
+        FROM order_items
+        WHERE order_id IN ($placeholders)
+        ORDER BY order_id DESC, id ASC
+    ");
+    $stmt->execute($orderIds);
+
+    foreach ($stmt->fetchAll() as $item) {
+        $orderItems[$item['order_id']][] = $item;
     }
 }
 
 $success = isset($_GET['success']) ? (int)$_GET['success'] : 0;
+
+$pageTitle = 'Мои заказы — MangaShop';
 ?>
 
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Мои заказы — MangaShop</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
-</head>
-<body>
-
-<header class="header">
-    <a href="/" class="logo">MangaShop</a>
-
-    <nav class="nav">
-        <a href="/">Главная</a>
-        <a href="/catalog.php">Каталог</a>
-        <a href="/cart.php">Корзина</a>
-        <a href="/orders.php">Мои заказы</a>
-
-        <?php if (isAdmin()): ?>
-            <a href="/admin/index.php">Админка</a>
-        <?php endif; ?>
-
-        <a href="/logout.php">Выход</a>
-    </nav>
-</header>
+<?php require_once __DIR__ . '/includes/header.php'; ?>
 
 <main class="container">
     <div class="page-title">
@@ -116,5 +105,4 @@ $success = isset($_GET['success']) ? (int)$_GET['success'] : 0;
     <?php endif; ?>
 </main>
 
-</body>
-</html>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>

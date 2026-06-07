@@ -12,13 +12,32 @@ $stmt = $pdo->query("
 ");
 $orders = $stmt->fetchAll();
 
-$statuses = array(
-    'Новый',
-    'В обработке',
-    'Отправлен',
-    'Завершён',
-    'Отменён'
-);
+$statuses = getOrderStatuses();
+
+$orderItems = array();
+
+if (count($orders) > 0) {
+    $orderIds = array();
+
+    foreach ($orders as $order) {
+        $orderIds[] = (int)$order['id'];
+        $orderItems[$order['id']] = array();
+    }
+
+    $placeholders = implode(', ', array_fill(0, count($orderIds), '?'));
+
+    $stmt = $pdo->prepare("
+        SELECT *
+        FROM order_items
+        WHERE order_id IN ($placeholders)
+        ORDER BY order_id DESC, id ASC
+    ");
+    $stmt->execute($orderIds);
+
+    foreach ($stmt->fetchAll() as $item) {
+        $orderItems[$item['order_id']][] = $item;
+    }
+}
 
 if (count($orders) === 0) {
     echo '<div class="empty">Заказов пока нет.</div>';
@@ -28,16 +47,6 @@ if (count($orders) === 0) {
 
 <div class="orders-list">
     <?php foreach ($orders as $order): ?>
-        <?php
-        $stmt = $pdo->prepare("
-            SELECT *
-            FROM order_items
-            WHERE order_id = ?
-        ");
-        $stmt->execute(array($order['id']));
-        $items = $stmt->fetchAll();
-        ?>
-
         <div class="order-card live-order-card">
             <div class="order-head">
                 <div>
@@ -63,7 +72,7 @@ if (count($orders) === 0) {
             </div>
 
             <div class="order-items">
-                <?php foreach ($items as $item): ?>
+                <?php foreach ($orderItems[$order['id']] as $item): ?>
                     <div class="order-item">
                         <span>
                             <?php echo e($item['title']); ?>

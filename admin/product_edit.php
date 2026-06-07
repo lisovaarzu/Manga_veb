@@ -57,20 +57,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($_FILES['image']['error'] !== UPLOAD_ERR_OK) {
                 $error = 'Ошибка загрузки изображения';
             } else {
-                $allowedTypes = array('image/jpeg', 'image/png', 'image/gif');
-                $fileType = $_FILES['image']['type'];
+                $allowedTypes = array(
+                    'image/jpeg' => 'jpg',
+                    'image/png' => 'png',
+                    'image/gif' => 'gif'
+                );
 
-                if (!in_array($fileType, $allowedTypes)) {
+                $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                $fileType = $finfo ? finfo_file($finfo, $_FILES['image']['tmp_name']) : false;
+
+                if ($finfo) {
+                    finfo_close($finfo);
+                }
+
+                if (!$fileType || !isset($allowedTypes[$fileType])) {
                     $error = 'Можно загружать только JPG, PNG или GIF';
                 } else {
-                    $extension = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+                    $extension = $allowedTypes[$fileType];
                     $newName = 'product_' . time() . '_' . mt_rand(1000, 9999) . '.' . $extension;
 
                     $uploadDir = __DIR__ . '/../uploads/products/';
                     $uploadPath = $uploadDir . $newName;
 
                     if (!is_dir($uploadDir)) {
-                        mkdir($uploadDir, 0777, true);
+                        mkdir($uploadDir, 0755, true);
                     }
 
                     if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadPath)) {
@@ -136,6 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $pageTitle = $id > 0 ? 'Редактировать товар — MangaShop' : 'Добавить товар — MangaShop';
+$headerLinks = getAdminHeaderLinks();
 ?>
 
 <?php require_once __DIR__ . '/../includes/header.php'; ?>
@@ -205,8 +216,9 @@ $pageTitle = $id > 0 ? 'Редактировать товар — MangaShop' : '
             <div class="admin-box">
                 <h2>Обложка</h2>
 
-                <?php if (!empty($product['image'])): ?>
-                    <img class="admin-preview" src="/uploads/products/<?php echo e($product['image']); ?>" alt="">
+                <?php $imageUrl = product_image_url($product['image']); ?>
+                <?php if ($imageUrl): ?>
+                    <img class="admin-preview" src="<?php echo e($imageUrl); ?>" alt="">
                 <?php else: ?>
                     <div class="empty">Обложка ещё не загружена.</div>
                 <?php endif; ?>

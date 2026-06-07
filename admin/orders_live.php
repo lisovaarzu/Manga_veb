@@ -5,6 +5,7 @@ require_once __DIR__ . '/../includes/auth.php';
 requireAdmin();
 
 $pageTitle = 'Live-заказы — MangaShop';
+$headerLinks = getAdminHeaderLinks();
 ?>
 
 <?php require_once __DIR__ . '/../includes/header.php'; ?>

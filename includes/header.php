@@ -2,12 +2,17 @@
 if (!isset($pageTitle)) {
     $pageTitle = 'MangaShop';
 }
+
+if (!isset($headerLinks) || !is_array($headerLinks)) {
+    $headerLinks = getDefaultHeaderLinks();
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo e($pageTitle); ?></title>
     <link rel="stylesheet" href="/assets/css/style.css">
 </head>
@@ -17,23 +22,10 @@ if (!isset($pageTitle)) {
     <a href="/" class="logo">MangaShop</a>
 
     <nav class="nav">
-        <a href="/">Главная</a>
-        <a href="/catalog.php">Каталог</a>
-
-        <?php if (isAuth()): ?>
-            <?php if (!isAdmin()): ?>
-                <a href="/cart.php">Корзина</a>
-                <a href="/orders.php">Мои заказы</a>
-            <?php endif; ?>
-
-            <?php if (isAdmin()): ?>
-                <a href="/admin/index.php">Админка</a>
-            <?php endif; ?>
-
-            <a href="/logout.php">Выход</a>
-        <?php else: ?>
-            <a href="/login.php">Вход</a>
-            <a href="/register.php">Регистрация</a>
-        <?php endif; ?>
+        <?php foreach ($headerLinks as $link): ?>
+            <a href="<?php echo e($link['href']); ?>">
+                <?php echo e($link['label']); ?>
+            </a>
+        <?php endforeach; ?>
     </nav>
 </header>

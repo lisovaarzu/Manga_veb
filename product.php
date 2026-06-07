@@ -29,47 +29,20 @@ $relatedStmt = $pdo->prepare("
 ");
 $relatedStmt->execute(array($product['category_id'], $product['id']));
 $relatedProducts = $relatedStmt->fetchAll();
+
+$pageTitle = $product['title'] . ' — MangaShop';
 ?>
 
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title><?php echo e($product['title']); ?> — MangaShop</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
-</head>
-<body>
-
-<header class="header">
-    <a href="/" class="logo">MangaShop</a>
-
-    <nav class="nav">
-        <a href="/">Главная</a>
-        <a href="/catalog.php">Каталог</a>
-
-        <?php if (isAuth()): ?>
-            <a href="/cart.php">Корзина</a>
-            <a href="/orders.php">Мои заказы</a>
-
-            <?php if (isAdmin()): ?>
-                <a href="/admin/index.php">Админка</a>
-            <?php endif; ?>
-
-            <a href="/logout.php">Выход</a>
-        <?php else: ?>
-            <a href="/login.php">Вход</a>
-            <a href="/register.php">Регистрация</a>
-        <?php endif; ?>
-    </nav>
-</header>
+<?php require_once __DIR__ . '/includes/header.php'; ?>
 
 <main class="container">
     <a href="/catalog.php" class="back-link">← Вернуться в каталог</a>
 
     <section class="product-detail">
+        <?php $mainImageUrl = product_image_url($product['image']); ?>
         <div class="product-detail-image">
-            <?php if (!empty($product['image'])): ?>
-                <img src="/uploads/products/<?php echo e($product['image']); ?>" alt="<?php echo e($product['title']); ?>">
+            <?php if ($mainImageUrl): ?>
+                <img src="<?php echo e($mainImageUrl); ?>" alt="<?php echo e($product['title']); ?>">
             <?php else: ?>
                 <span>Нет изображения</span>
             <?php endif; ?>
@@ -102,6 +75,7 @@ $relatedProducts = $relatedStmt->fetchAll();
             <?php if (isAuth() && !isAdmin()): ?>
                 <?php if ($product['stock'] > 0): ?>
                     <form action="/ajax/add_to_cart.php" method="post" class="add-cart-form">
+                        <?php echo csrf_field(); ?>
                         <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
 
                         <div class="form-group quantity-group">
@@ -129,10 +103,11 @@ $relatedProducts = $relatedStmt->fetchAll();
 
             <div class="product-grid">
                 <?php foreach ($relatedProducts as $item): ?>
+                    <?php $imageUrl = product_image_url($item['image']); ?>
                     <div class="product-card">
                         <div class="product-image">
-                            <?php if (!empty($item['image'])): ?>
-                                <img src="/uploads/products/<?php echo e($item['image']); ?>" alt="<?php echo e($item['title']); ?>">
+                            <?php if ($imageUrl): ?>
+                                <img src="<?php echo e($imageUrl); ?>" alt="<?php echo e($item['title']); ?>">
                             <?php else: ?>
                                 <span>Нет изображения</span>
                             <?php endif; ?>
@@ -152,5 +127,4 @@ $relatedProducts = $relatedStmt->fetchAll();
     <?php endif; ?>
 </main>
 
-</body>
-</html>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>

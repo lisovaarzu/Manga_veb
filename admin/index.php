@@ -17,28 +17,12 @@ $latestOrders = $pdo->query("
     ORDER BY orders.id DESC
     LIMIT 5
 ")->fetchAll();
+
+$pageTitle = 'Админка — MangaShop';
+$headerLinks = getAdminHeaderLinks();
 ?>
 
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Админка — MangaShop</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
-</head>
-<body>
-
-<header class="header">
-    <a href="/" class="logo">MangaShop</a>
-
-    <nav class="nav">
-        <a href="/">На сайт</a>
-        <a href="/admin/products.php">Товары</a>
-        <a href="/admin/categories.php">Категории</a>
-        <a href="/admin/orders_live.php">Заказы Live</a>
-        <a href="/logout.php">Выход</a>
-    </nav>
-</header>
+<?php require_once __DIR__ . '/../includes/header.php'; ?>
 
 <main class="container">
     <div class="page-title">
@@ -108,5 +92,4 @@ $latestOrders = $pdo->query("
     </div>
 </main>
 
-</body>
-</html>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>
