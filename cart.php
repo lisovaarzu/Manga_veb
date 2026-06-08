@@ -81,9 +81,11 @@ $stmt->execute(array($user_id));
 $items = $stmt->fetchAll();
 
 $total = 0;
+$totalQuantity = 0;
 
 foreach ($items as $item) {
     $total += $item['price'] * $item['quantity'];
+    $totalQuantity += (int)$item['quantity'];
 }
 
 $pageTitle = 'Корзина — MangaShop';
@@ -171,7 +173,7 @@ $pageTitle = 'Корзина — MangaShop';
 
                 <div class="summary-row">
                     <span>Товаров:</span>
-                    <strong><?php echo count($items); ?></strong>
+                    <strong><?php echo $totalQuantity; ?></strong>
                 </div>
 
                 <div class="summary-row">

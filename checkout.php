@@ -28,6 +28,7 @@ if (count($items) === 0) {
 }
 
 $total = 0;
+$totalQuantity = 0;
 
 foreach ($items as $item) {
     if ($item['quantity'] > $item['stock']) {
@@ -35,6 +36,7 @@ foreach ($items as $item) {
     }
 
     $total += $item['price'] * $item['quantity'];
+    $totalQuantity += (int)$item['quantity'];
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $error === '') {
@@ -174,7 +176,7 @@ $pageTitle = 'Оформление заказа — MangaShop';
 
             <div class="summary-row">
                 <span>Товаров:</span>
-                <strong><?php echo count($items); ?></strong>
+                <strong><?php echo $totalQuantity; ?></strong>
             </div>
 
             <div class="summary-row">
