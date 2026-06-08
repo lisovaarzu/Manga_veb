@@ -79,15 +79,6 @@ CREATE TABLE `orders` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Дамп данных таблицы `orders`
---
-
-INSERT INTO `orders` (`id`, `user_id`, `total_price`, `status`, `created_at`) VALUES
-(1, 2, '2497.00', 'Новый', '2026-06-06 03:41:18'),
-(2, 2, '849.00', 'Отправлен', '2026-06-06 03:41:52'),
-(3, 3, '1299.00', 'Новый', '2026-06-06 04:09:14');
-
 -- --------------------------------------------------------
 
 --
@@ -102,16 +93,6 @@ CREATE TABLE `order_items` (
   `price` decimal(10,2) NOT NULL,
   `quantity` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Дамп данных таблицы `order_items`
---
-
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `title`, `price`, `quantity`) VALUES
-(1, 1, 1, 'Наруто. Том 1', '799.00', 1),
-(2, 1, 5, 'Магическая битва. Том 1', '849.00', 2),
-(3, 2, 5, 'Магическая битва. Том 1', '849.00', 1),
-(4, 3, 3, 'Берсерк. Том 1', '1299.00', 1);
 
 -- --------------------------------------------------------
 
@@ -180,9 +161,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `created_at`) VALUES
-(1, 'Администратор', 'admin@mail.ru', '$2y$10$GZd2GIFYQNqgCwTmj0eDU.dzR93Oqi9nqKeGjRJ.KrKI3qRsqa4Ly', 'admin', '2026-06-06 03:18:51'),
-(2, 'Иван', 'user@mail.ru', '$2y$10$GR.qrlV6y3s.Ae5sz0oUWunWipBCKnVcgnXTE.1Qdr6w3Q0uEMpF6', 'user', '2026-06-06 03:25:37'),
-(3, 'test', 'test@mail.ru', '$2y$10$/knu3ikSQrggCbA/NuYVWelmm3hWfXVU4COCiOOcYDdDKIc.N2Zzq', 'user', '2026-06-06 04:08:35');
+(1, 'Администратор', 'admin@mail.ru', '$2y$10$GZd2GIFYQNqgCwTmj0eDU.dzR93Oqi9nqKeGjRJ.KrKI3qRsqa4Ly', 'admin', '2026-06-06 03:18:51');
 
 --
 -- Индексы сохранённых таблиц
@@ -238,7 +217,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT для таблицы `cart_items`
 --
 ALTER TABLE `cart_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
 
 --
 -- AUTO_INCREMENT для таблицы `categories`
@@ -250,13 +229,13 @@ ALTER TABLE `categories`
 -- AUTO_INCREMENT для таблицы `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
 
 --
 -- AUTO_INCREMENT для таблицы `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
 
 --
 -- AUTO_INCREMENT для таблицы `products`
@@ -268,7 +247,7 @@ ALTER TABLE `products`
 -- AUTO_INCREMENT для таблицы `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Ограничения внешнего ключа сохраненных таблиц
