@@ -1,6 +1,6 @@
 <?php
 
-$host = 'localhost';
+$host = $_SERVER['SERVER_ADDR'] ?? '127.0.0.1';
 $dbname = 'manga_shop';
 $user = 'root';
 $password = '';

@@ -127,7 +127,6 @@ function getAdminHeaderLinks()
         array('href' => '/admin/index.php', 'label' => 'Админка'),
         array('href' => '/admin/products.php', 'label' => 'Товары'),
         array('href' => '/admin/categories.php', 'label' => 'Категории'),
-        array('href' => '/admin/users.php', 'label' => 'Пользователи'),
         array('href' => '/admin/orders_live.php', 'label' => 'Live-заказы'),
         array('href' => '/logout.php', 'label' => 'Выход')
     );

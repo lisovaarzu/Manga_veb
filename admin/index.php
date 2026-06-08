@@ -75,7 +75,6 @@ $headerLinks = getAdminHeaderLinks();
                 <a href="/admin/products.php" class="btn">Товары</a>
                 <a href="/admin/product_edit.php" class="btn">Добавить товар</a>
                 <a href="/admin/categories.php" class="btn">Категории</a>
-                <a href="/admin/users.php" class="btn">Пользователи</a>
                 <a href="/admin/orders_live.php" class="btn">Live-заказы</a>
             </div>
         </section>

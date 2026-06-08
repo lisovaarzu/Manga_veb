@@ -6,6 +6,11 @@ Thumbs.db
 
 *.log
 
+uploads/products/*
+!uploads/products/.gitkeep
+!uploads/products/*.jpg
+!uploads/products/*.jpeg
+!uploads/products/*.webp
 
 node_modules/
 vendor/
