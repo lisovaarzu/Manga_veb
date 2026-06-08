@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($email === '' || $password === '') {
         $error = 'Введите email и пароль';
     } else {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND is_deleted = 0");
         $stmt->execute(array($email));
         $user = $stmt->fetch();
 
@@ -49,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $pageTitle = 'Вход — MangaShop';
+$accountDeleted = isset($_GET['account_deleted']) && (int)$_GET['account_deleted'] === 1;
 ?>
 
 <?php require_once __DIR__ . '/includes/header.php'; ?>
@@ -60,6 +61,10 @@ $pageTitle = 'Вход — MangaShop';
 
         <?php if ($error): ?>
             <div class="alert error"><?php echo e($error); ?></div>
+        <?php endif; ?>
+
+        <?php if ($accountDeleted): ?>
+            <div class="alert success">Аккаунт удалён.</div>
         <?php endif; ?>
 
         <form method="post">

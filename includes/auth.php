@@ -6,7 +6,32 @@ if (session_status() === PHP_SESSION_NONE) {
 
 function isAuth()
 {
-    return isset($_SESSION['user']);
+    if (!isset($_SESSION['user'])) {
+        return false;
+    }
+
+    global $pdo;
+    static $checkedUserId = null;
+
+    $userId = (int)$_SESSION['user']['id'];
+
+    if (isset($pdo) && $pdo instanceof PDO && $checkedUserId !== $userId) {
+        $stmt = $pdo->prepare("
+            SELECT id
+            FROM users
+            WHERE id = ? AND is_deleted = 0
+        ");
+        $stmt->execute(array($userId));
+
+        if (!$stmt->fetch()) {
+            unset($_SESSION['user']);
+            return false;
+        }
+
+        $checkedUserId = $userId;
+    }
+
+    return true;
 }
 
 function isAdmin()
@@ -81,6 +106,7 @@ function getDefaultHeaderLinks()
         if (!isAdmin()) {
             $links[] = array('href' => '/cart.php', 'label' => 'Корзина');
             $links[] = array('href' => '/orders.php', 'label' => 'Мои заказы');
+            $links[] = array('href' => '/account.php', 'label' => 'Аккаунт');
         } else {
             $links[] = array('href' => '/admin/index.php', 'label' => 'Админка');
         }
@@ -101,6 +127,7 @@ function getAdminHeaderLinks()
         array('href' => '/admin/index.php', 'label' => 'Админка'),
         array('href' => '/admin/products.php', 'label' => 'Товары'),
         array('href' => '/admin/categories.php', 'label' => 'Категории'),
+        array('href' => '/admin/users.php', 'label' => 'Пользователи'),
         array('href' => '/admin/orders_live.php', 'label' => 'Live-заказы'),
         array('href' => '/logout.php', 'label' => 'Выход')
     );

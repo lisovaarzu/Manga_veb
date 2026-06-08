@@ -153,6 +153,7 @@ CREATE TABLE `users` (
   `email` varchar(150) NOT NULL,
   `password` varchar(255) NOT NULL,
   `role` varchar(20) NOT NULL DEFAULT 'user',
+  `is_deleted` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -160,8 +161,8 @@ CREATE TABLE `users` (
 -- Дамп данных таблицы `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `created_at`) VALUES
-(1, 'Администратор', 'admin@mail.ru', '$2y$10$GZd2GIFYQNqgCwTmj0eDU.dzR93Oqi9nqKeGjRJ.KrKI3qRsqa4Ly', 'admin', '2026-06-06 03:18:51');
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `is_deleted`, `created_at`) VALUES
+(1, 'Администратор', 'admin@mail.ru', '$2y$10$GZd2GIFYQNqgCwTmj0eDU.dzR93Oqi9nqKeGjRJ.KrKI3qRsqa4Ly', 'admin', 0, '2026-06-06 03:18:51');
 
 --
 -- Индексы сохранённых таблиц

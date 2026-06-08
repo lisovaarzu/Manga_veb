@@ -21,6 +21,9 @@ $(document).ready(function () {
             csrf_token: CSRF_TOKEN
         }, function () {
             loadOrders();
+        }).fail(function (response) {
+            alert(response.responseText || 'Не удалось изменить статус заказа.');
+            loadOrders();
         });
     });
 });
