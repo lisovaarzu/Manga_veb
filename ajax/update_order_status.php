@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/order_helpers.php';
 
 requireAdmin();
 
@@ -21,11 +22,12 @@ if ($order_id <= 0 || !in_array($status, $allowedStatuses)) {
     exit;
 }
 
-$stmt = $pdo->prepare("
-    UPDATE orders
-    SET status = ?
-    WHERE id = ?
-");
-$stmt->execute(array($status, $order_id));
+$result = changeOrderStatus($pdo, $order_id, $status);
 
-echo 'ok';
+if (!$result['success']) {
+    http_response_code(409);
+    echo $result['message'];
+    exit;
+}
+
+echo $result['message'];

@@ -6,9 +6,17 @@ requireAdmin();
 
 $totalProducts = $pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
 $totalCategories = $pdo->query("SELECT COUNT(*) FROM categories")->fetchColumn();
-$totalUsers = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'user'")->fetchColumn();
+$totalUsers = $pdo->query("
+    SELECT COUNT(*)
+    FROM users
+    WHERE role = 'user' AND is_deleted = 0
+")->fetchColumn();
 $totalOrders = $pdo->query("SELECT COUNT(*) FROM orders")->fetchColumn();
-$totalSales = $pdo->query("SELECT IFNULL(SUM(total_price), 0) FROM orders")->fetchColumn();
+$totalSales = $pdo->query("
+    SELECT IFNULL(SUM(total_price), 0)
+    FROM orders
+    WHERE status <> 'Отменён'
+")->fetchColumn();
 
 $latestOrders = $pdo->query("
     SELECT orders.*, users.name AS user_name
@@ -67,6 +75,7 @@ $headerLinks = getAdminHeaderLinks();
                 <a href="/admin/products.php" class="btn">Товары</a>
                 <a href="/admin/product_edit.php" class="btn">Добавить товар</a>
                 <a href="/admin/categories.php" class="btn">Категории</a>
+                <a href="/admin/users.php" class="btn">Пользователи</a>
                 <a href="/admin/orders_live.php" class="btn">Live-заказы</a>
             </div>
         </section>

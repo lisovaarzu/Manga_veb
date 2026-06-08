@@ -974,8 +974,32 @@ textarea.form-control {
     color: #ffffff;
 }
 
+.order-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 18px;
+}
+
+.account-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.danger-zone {
+    border-color: rgba(255, 31, 61, 0.4);
+}
+
+.danger-zone p {
+    color: var(--muted);
+}
+
 @media (max-width: 980px) {
     .checkout-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .account-grid {
         grid-template-columns: 1fr;
     }
 }

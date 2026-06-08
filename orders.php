@@ -1,10 +1,27 @@
 <?php
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/order_helpers.php';
 
 requireCustomer();
 
 $user_id = $_SESSION['user']['id'];
+$error = '';
+$cancelSuccess = false;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_check();
+
+    $orderId = isset($_POST['order_id']) ? (int)$_POST['order_id'] : 0;
+    $result = changeOrderStatus($pdo, $orderId, 'Отменён', $user_id, true);
+
+    if ($result['success']) {
+        header('Location: /orders.php?cancelled=1');
+        exit;
+    }
+
+    $error = $result['message'];
+}
 
 $stmt = $pdo->prepare("
     SELECT *
@@ -41,6 +58,7 @@ if (count($orders) > 0) {
 }
 
 $success = isset($_GET['success']) ? (int)$_GET['success'] : 0;
+$cancelSuccess = isset($_GET['cancelled']) && (int)$_GET['cancelled'] === 1;
 
 $pageTitle = 'Мои заказы — MangaShop';
 ?>
@@ -59,6 +77,14 @@ $pageTitle = 'Мои заказы — MangaShop';
 
     <?php if ($success): ?>
         <div class="alert success">Заказ успешно оформлен.</div>
+    <?php endif; ?>
+
+    <?php if ($cancelSuccess): ?>
+        <div class="alert success">Заказ отменён, товары возвращены на склад.</div>
+    <?php endif; ?>
+
+    <?php if ($error): ?>
+        <div class="alert error"><?php echo e($error); ?></div>
     <?php endif; ?>
 
     <?php if (count($orders) > 0): ?>
@@ -95,6 +121,16 @@ $pageTitle = 'Мои заказы — MangaShop';
                         Итого:
                         <strong><?php echo number_format($order['total_price'], 2, '.', ' '); ?> ₽</strong>
                     </div>
+
+                    <?php if ($order['status'] === 'Новый'): ?>
+                        <div class="order-actions">
+                            <form method="post" onsubmit="return confirm('Отменить заказ и вернуть товары на склад?');">
+                                <?php echo csrf_field(); ?>
+                                <input type="hidden" name="order_id" value="<?php echo (int)$order['id']; ?>">
+                                <button class="btn small btn-danger" type="submit">Отменить заказ</button>
+                            </form>
+                        </div>
+                    <?php endif; ?>
                 </div>
             <?php endforeach; ?>
         </div>
