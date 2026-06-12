@@ -4,6 +4,12 @@ require_once __DIR__ . '/includes/auth.php';
 
 $category_id = isset($_GET['category_id']) ? (int)$_GET['category_id'] : 0;
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$ageRatings = getAgeRatings();
+$ageRating = isset($_GET['age_rating']) ? trim($_GET['age_rating']) : '';
+
+if (!in_array($ageRating, $ageRatings, true)) {
+    $ageRating = '';
+}
 
 $categories = $pdo->query("SELECT * FROM categories ORDER BY title ASC")->fetchAll();
 
@@ -22,9 +28,23 @@ if ($category_id > 0) {
 }
 
 if ($search !== '') {
-    $sql .= " AND (products.title LIKE ? OR products.author LIKE ?)";
-    $params[] = '%' . $search . '%';
-    $params[] = '%' . $search . '%';
+    $normalizedSearch = '%' . normalizeSearchText($search) . '%';
+
+    $sql .= " AND (
+        " . getNormalizedSearchSql('products.title') . " LIKE ?
+        OR " . getNormalizedSearchSql('products.author') . " LIKE ?
+        OR " . getNormalizedSearchSql('products.description') . " LIKE ?
+        OR products.age_rating LIKE ?
+    )";
+    $params[] = $normalizedSearch;
+    $params[] = $normalizedSearch;
+    $params[] = $normalizedSearch;
+    $params[] = $normalizedSearch;
+}
+
+if ($ageRating !== '') {
+    $sql .= " AND products.age_rating = ?";
+    $params[] = $ageRating;
 }
 
 $sql .= " ORDER BY products.id DESC";
@@ -49,7 +69,13 @@ $pageTitle = 'Каталог — MangaShop';
     <form class="catalog-filter" method="get">
         <div class="form-group">
             <label>Поиск</label>
-            <input class="form-control" type="text" name="search" placeholder="Название или автор" value="<?php echo e($search); ?>">
+            <input
+                class="form-control"
+                type="text"
+                name="search"
+                placeholder="Название, автор, ключевое слово или 16+"
+                value="<?php echo e($search); ?>"
+            >
         </div>
 
         <div class="form-group">
@@ -60,6 +86,19 @@ $pageTitle = 'Каталог — MangaShop';
                 <?php foreach ($categories as $category): ?>
                     <option value="<?php echo $category['id']; ?>" <?php echo $category_id == $category['id'] ? 'selected' : ''; ?>>
                         <?php echo e($category['title']); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Возрастной рейтинг</label>
+            <select class="form-control" name="age_rating">
+                <option value="">Любой рейтинг</option>
+
+                <?php foreach ($ageRatings as $rating): ?>
+                    <option value="<?php echo e($rating); ?>" <?php echo $ageRating === $rating ? 'selected' : ''; ?>>
+                        <?php echo e($rating); ?>
                     </option>
                 <?php endforeach; ?>
             </select>
@@ -85,9 +124,19 @@ $pageTitle = 'Каталог — MangaShop';
                     </div>
 
                     <div class="product-info">
-                        <span class="category"><?php echo e($product['category_title']); ?></span>
+                        <div class="product-meta">
+                            <span class="category"><?php echo e($product['category_title']); ?></span>
+                            <span class="badge age-badge <?php echo hasAdultAgeRating(isset($product['age_rating']) ? $product['age_rating'] : '16+') ? 'adult' : ''; ?>">
+                                <?php echo e(isset($product['age_rating']) ? $product['age_rating'] : '16+'); ?>
+                            </span>
+                        </div>
                         <h3><?php echo e($product['title']); ?></h3>
-                        <p><?php echo e($product['author']); ?></p>
+                        <p class="product-card-author"><?php echo e($product['author']); ?></p>
+
+                        <?php if (!empty($product['description'])): ?>
+                            <p class="product-card-description"><?php echo e(excerptText($product['description'], 150)); ?></p>
+                        <?php endif; ?>
+
                         <strong><?php echo e($product['price']); ?> ₽</strong>
 
                         <?php if ($product['stock'] > 0): ?>

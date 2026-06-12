@@ -49,7 +49,12 @@ $pageTitle = $product['title'] . ' — MangaShop';
         </div>
 
         <div class="product-detail-info">
-            <span class="category"><?php echo e($product['category_title']); ?></span>
+            <div class="product-meta">
+                <span class="category"><?php echo e($product['category_title']); ?></span>
+                <span class="badge age-badge <?php echo hasAdultAgeRating($product['age_rating']) ? 'adult' : ''; ?>">
+                    <?php echo e(isset($product['age_rating']) ? $product['age_rating'] : '16+'); ?>
+                </span>
+            </div>
 
             <h1><?php echo e($product['title']); ?></h1>
 
@@ -114,9 +119,19 @@ $pageTitle = $product['title'] . ' — MangaShop';
                         </div>
 
                         <div class="product-info">
-                            <span class="category"><?php echo e($item['category_title']); ?></span>
+                            <div class="product-meta">
+                                <span class="category"><?php echo e($item['category_title']); ?></span>
+                                <span class="badge age-badge <?php echo hasAdultAgeRating($item['age_rating']) ? 'adult' : ''; ?>">
+                                    <?php echo e(isset($item['age_rating']) ? $item['age_rating'] : '16+'); ?>
+                                </span>
+                            </div>
                             <h3><?php echo e($item['title']); ?></h3>
-                            <p><?php echo e($item['author']); ?></p>
+                            <p class="product-card-author"><?php echo e($item['author']); ?></p>
+
+                            <?php if (!empty($item['description'])): ?>
+                                <p class="product-card-description"><?php echo e(excerptText($item['description'], 110)); ?></p>
+                            <?php endif; ?>
+
                             <strong><?php echo e($item['price']); ?> ₽</strong>
                             <a href="/product.php?id=<?php echo $item['id']; ?>" class="btn small">Подробнее</a>
                         </div>

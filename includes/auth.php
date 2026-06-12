@@ -143,6 +143,56 @@ function getOrderStatuses()
     );
 }
 
+function getAgeRatings()
+{
+    return array('0+', '6+', '12+', '16+', '18+');
+}
+
+function normalizeSearchText($value)
+{
+    $value = trim((string)$value);
+
+    if ($value === '') {
+        return '';
+    }
+
+    $value = preg_replace('/\s+/u', ' ', $value);
+    $value = mb_strtolower($value, 'UTF-8');
+
+    return str_replace(
+        array('ё', 'й'),
+        array('е', 'и'),
+        $value
+    );
+}
+
+function getNormalizedSearchSql($field)
+{
+    return "REPLACE(REPLACE(LOWER($field), 'ё', 'е'), 'й', 'и')";
+}
+
+function hasAdultAgeRating($ageRating)
+{
+    return (string)$ageRating === '18+';
+}
+
+function excerptText($value, $limit = 150)
+{
+    $value = preg_replace('/\s+/u', ' ', trim((string)$value));
+
+    if ($value === '') {
+        return '';
+    }
+
+    if (mb_strlen($value, 'UTF-8') <= $limit) {
+        return $value;
+    }
+
+    $shortText = mb_substr($value, 0, $limit, 'UTF-8');
+
+    return rtrim($shortText) . '...';
+}
+
 function csrf_token()
 {
     if (empty($_SESSION['csrf_token'])) {

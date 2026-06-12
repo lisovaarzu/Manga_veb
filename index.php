@@ -91,9 +91,19 @@ $pageTitle = 'MangaShop — магазин манги';
                     </div>
 
                     <div class="product-info">
-                        <span class="category"><?php echo e($product['category_title']); ?></span>
+                        <div class="product-meta">
+                            <span class="category"><?php echo e($product['category_title']); ?></span>
+                            <span class="badge age-badge <?php echo hasAdultAgeRating($product['age_rating']) ? 'adult' : ''; ?>">
+                                <?php echo e(isset($product['age_rating']) ? $product['age_rating'] : '16+'); ?>
+                            </span>
+                        </div>
                         <h3><?php echo e($product['title']); ?></h3>
-                        <p><?php echo e($product['author']); ?></p>
+                        <p class="product-card-author"><?php echo e($product['author']); ?></p>
+
+                        <?php if (!empty($product['description'])): ?>
+                            <p class="product-card-description"><?php echo e(excerptText($product['description'], 120)); ?></p>
+                        <?php endif; ?>
+
                         <strong><?php echo e($product['price']); ?> ₽</strong>
                         <a href="/product.php?id=<?php echo $product['id']; ?>" class="btn small">Подробнее</a>
                     </div>
@@ -123,9 +133,19 @@ $pageTitle = 'MangaShop — магазин манги';
                     </div>
 
                     <div class="product-info">
-                        <span class="category"><?php echo e($product['category_title']); ?></span>
+                        <div class="product-meta">
+                            <span class="category"><?php echo e($product['category_title']); ?></span>
+                            <span class="badge age-badge <?php echo hasAdultAgeRating($product['age_rating']) ? 'adult' : ''; ?>">
+                                <?php echo e(isset($product['age_rating']) ? $product['age_rating'] : '16+'); ?>
+                            </span>
+                        </div>
                         <h3><?php echo e($product['title']); ?></h3>
-                        <p><?php echo e($product['author']); ?></p>
+                        <p class="product-card-author"><?php echo e($product['author']); ?></p>
+
+                        <?php if (!empty($product['description'])): ?>
+                            <p class="product-card-description"><?php echo e(excerptText($product['description'], 120)); ?></p>
+                        <?php endif; ?>
+
                         <strong><?php echo e($product['price']); ?> ₽</strong>
                         <a href="/product.php?id=<?php echo $product['id']; ?>" class="btn small">Подробнее</a>
                     </div>

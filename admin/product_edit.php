@@ -15,6 +15,7 @@ $product = array(
     'title' => '',
     'author' => '',
     'description' => '',
+    'age_rating' => '16+',
     'price' => '',
     'image' => '',
     'stock' => ''
@@ -31,15 +32,21 @@ if ($id > 0) {
     }
 
     $product = $foundProduct;
+
+    if (!isset($product['age_rating']) || $product['age_rating'] === '') {
+        $product['age_rating'] = '16+';
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check();
 
+    $ageRatings = getAgeRatings();
     $category_id = isset($_POST['category_id']) ? (int)$_POST['category_id'] : 0;
     $title = trim($_POST['title']);
     $author = trim($_POST['author']);
     $description = trim($_POST['description']);
+    $ageRating = isset($_POST['age_rating']) ? trim($_POST['age_rating']) : '16+';
     $price = isset($_POST['price']) ? (float)$_POST['price'] : 0;
     $stock = isset($_POST['stock']) ? (int)$_POST['stock'] : 0;
     $imageName = $product['image'];
@@ -48,6 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Выберите категорию';
     } elseif ($title === '') {
         $error = 'Введите название товара';
+    } elseif (!in_array($ageRating, $ageRatings, true)) {
+        $error = 'Выберите возрастной рейтинг';
     } elseif ($price <= 0) {
         $error = 'Введите корректную цену';
     } elseif ($stock < 0) {
@@ -60,7 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $allowedTypes = array(
                     'image/jpeg' => 'jpg',
                     'image/png' => 'png',
-                    'image/gif' => 'gif'
+                    'image/gif' => 'gif',
+                    'image/webp' => 'webp'
                 );
 
                 $finfo = finfo_open(FILEINFO_MIME_TYPE);
@@ -71,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 if (!$fileType || !isset($allowedTypes[$fileType])) {
-                    $error = 'Можно загружать только JPG, PNG или GIF';
+                    $error = 'Можно загружать только JPG, PNG, GIF или WEBP';
                 } else {
                     $extension = $allowedTypes[$fileType];
                     $newName = 'product_' . time() . '_' . mt_rand(1000, 9999) . '.' . $extension;
@@ -101,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($id > 0) {
             $stmt = $pdo->prepare("
                 UPDATE products
-                SET category_id = ?, title = ?, author = ?, description = ?, price = ?, image = ?, stock = ?
+                SET category_id = ?, title = ?, author = ?, description = ?, age_rating = ?, price = ?, image = ?, stock = ?
                 WHERE id = ?
             ");
 
@@ -110,6 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $title,
                 $author,
                 $description,
+                $ageRating,
                 $price,
                 $imageName,
                 $stock,
@@ -117,8 +128,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ));
         } else {
             $stmt = $pdo->prepare("
-                INSERT INTO products (category_id, title, author, description, price, image, stock)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO products (category_id, title, author, description, age_rating, price, image, stock)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ");
 
             $stmt->execute(array(
@@ -126,6 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $title,
                 $author,
                 $description,
+                $ageRating,
                 $price,
                 $imageName,
                 $stock
@@ -140,6 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $product['title'] = $title;
     $product['author'] = $author;
     $product['description'] = $description;
+    $product['age_rating'] = $ageRating;
     $product['price'] = $price;
     $product['stock'] = $stock;
     $product['image'] = $imageName;
@@ -198,6 +211,17 @@ $headerLinks = getAdminHeaderLinks();
                     <textarea class="form-control" name="description"><?php echo e($product['description']); ?></textarea>
                 </div>
 
+                <div class="form-group">
+                    <label>Возрастной рейтинг</label>
+                    <select class="form-control" name="age_rating">
+                        <?php foreach (getAgeRatings() as $rating): ?>
+                            <option value="<?php echo e($rating); ?>" <?php echo $product['age_rating'] === $rating ? 'selected' : ''; ?>>
+                                <?php echo e($rating); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
                 <div class="form-row">
                     <div class="form-group">
                         <label>Цена</label>
@@ -225,10 +249,10 @@ $headerLinks = getAdminHeaderLinks();
 
                 <div class="form-group">
                     <label>Загрузить новую обложку</label>
-                    <input class="form-control" type="file" name="image" accept="image/jpeg,image/png,image/gif">
+                    <input class="form-control" type="file" name="image" accept="image/jpeg,image/png,image/gif,image/webp">
                 </div>
 
-                <p class="page-subtitle">Разрешены JPG, PNG, GIF.</p>
+                <p class="page-subtitle">Разрешены JPG, PNG, GIF и WEBP.</p>
             </div>
         </div>
     </form>

@@ -16,15 +16,21 @@ $sql = "
 $params = array();
 
 if ($search !== '') {
+    $normalizedSearch = '%' . normalizeSearchText($search) . '%';
+
     $sql .= " AND (
-        products.title LIKE ?
-        OR products.author LIKE ?
-        OR categories.title LIKE ?
+        " . getNormalizedSearchSql('products.title') . " LIKE ?
+        OR " . getNormalizedSearchSql('products.author') . " LIKE ?
+        OR " . getNormalizedSearchSql('products.description') . " LIKE ?
+        OR " . getNormalizedSearchSql('categories.title') . " LIKE ?
+        OR products.age_rating LIKE ?
     )";
 
-    $params[] = '%' . $search . '%';
-    $params[] = '%' . $search . '%';
-    $params[] = '%' . $search . '%';
+    $params[] = $normalizedSearch;
+    $params[] = $normalizedSearch;
+    $params[] = $normalizedSearch;
+    $params[] = $normalizedSearch;
+    $params[] = $normalizedSearch;
 }
 
 $sql .= " ORDER BY products.id DESC";
@@ -56,7 +62,7 @@ $headerLinks = getAdminHeaderLinks();
                 class="form-control"
                 type="text"
                 name="search"
-                placeholder="Название, автор или категория"
+                placeholder="Название, автор, категория, описание или 16+"
                 value="<?php echo e($search); ?>"
             >
         </div>
@@ -77,6 +83,7 @@ $headerLinks = getAdminHeaderLinks();
                         <th>Название</th>
                         <th>Автор</th>
                         <th>Категория</th>
+                        <th>Возраст</th>
                         <th>Цена</th>
                         <th>Остаток</th>
                         <th>Действия</th>
@@ -112,6 +119,12 @@ $headerLinks = getAdminHeaderLinks();
                             <td>
                                 <span class="badge pink">
                                     <?php echo e($product['category_title']); ?>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge age-badge <?php echo hasAdultAgeRating($product['age_rating']) ? 'adult' : ''; ?>">
+                                    <?php echo e($product['age_rating']); ?>
                                 </span>
                             </td>
 

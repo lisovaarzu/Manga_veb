@@ -14,7 +14,7 @@ if (!isset($headerLinks) || !is_array($headerLinks)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo e($pageTitle); ?></title>
-    <link rel="stylesheet" href="/assets/css/style.css?v=20260609-1">
+    <link rel="stylesheet" href="/assets/css/style.css?v=20260613-2">
 </head>
 <body>
 

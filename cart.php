@@ -71,6 +71,7 @@ $stmt = $pdo->prepare("
         products.author,
         products.price,
         products.image,
+        products.age_rating,
         products.stock
     FROM cart_items
     INNER JOIN products ON cart_items.product_id = products.id
@@ -82,10 +83,15 @@ $items = $stmt->fetchAll();
 
 $total = 0;
 $totalQuantity = 0;
+$hasAdultProducts = false;
 
 foreach ($items as $item) {
     $total += $item['price'] * $item['quantity'];
     $totalQuantity += (int)$item['quantity'];
+
+    if (hasAdultAgeRating($item['age_rating'])) {
+        $hasAdultProducts = true;
+    }
 }
 
 $pageTitle = 'Корзина — MangaShop';
@@ -125,11 +131,17 @@ $pageTitle = 'Корзина — MangaShop';
                             </h3>
 
                             <p><?php echo e($item['author']); ?></p>
-                            <?php if ($item['stock'] > 0): ?>
-                                <span class="badge pink">В наличии: <?php echo (int)$item['stock']; ?></span>
-                            <?php else: ?>
-                                <span class="badge red">Товар закончился</span>
-                            <?php endif; ?>
+                            <div class="cart-tags">
+                                <span class="badge age-badge <?php echo hasAdultAgeRating($item['age_rating']) ? 'adult' : ''; ?>">
+                                    <?php echo e($item['age_rating']); ?>
+                                </span>
+
+                                <?php if ($item['stock'] > 0): ?>
+                                    <span class="badge pink">В наличии: <?php echo (int)$item['stock']; ?></span>
+                                <?php else: ?>
+                                    <span class="badge red">Товар закончился</span>
+                                <?php endif; ?>
+                            </div>
 
                             <div class="cart-price">
                                 <?php echo e($item['price']); ?> ₽
@@ -180,6 +192,12 @@ $pageTitle = 'Корзина — MangaShop';
                     <span>Сумма:</span>
                     <strong><?php echo number_format($total, 2, '.', ' '); ?> ₽</strong>
                 </div>
+
+                <?php if ($hasAdultProducts): ?>
+                    <div class="age-warning">
+                        В корзине есть товары 18+. При выдаче такого заказа магазин при необходимости может попросить документ, подтверждающий возраст.
+                    </div>
+                <?php endif; ?>
 
                 <a href="/checkout.php" class="btn full-btn">Оформить заказ</a>
             </aside>

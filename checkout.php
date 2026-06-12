@@ -14,6 +14,7 @@ $stmt = $pdo->prepare("
         products.id AS product_id,
         products.title,
         products.price,
+        products.age_rating,
         products.stock
     FROM cart_items
     INNER JOIN products ON cart_items.product_id = products.id
@@ -29,6 +30,7 @@ if (count($items) === 0) {
 
 $total = 0;
 $totalQuantity = 0;
+$hasAdultProducts = false;
 
 foreach ($items as $item) {
     if ($item['quantity'] > $item['stock']) {
@@ -37,6 +39,10 @@ foreach ($items as $item) {
 
     $total += $item['price'] * $item['quantity'];
     $totalQuantity += (int)$item['quantity'];
+
+    if (hasAdultAgeRating($item['age_rating'])) {
+        $hasAdultProducts = true;
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $error === '') {
@@ -52,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $error === '') {
                 products.id AS product_id,
                 products.title,
                 products.price,
+                products.age_rating,
                 products.stock
             FROM cart_items
             INNER JOIN products ON cart_items.product_id = products.id
@@ -163,7 +170,10 @@ $pageTitle = 'Оформление заказа — MangaShop';
                 <div class="checkout-item">
                     <div>
                         <strong><?php echo e($item['title']); ?></strong>
-                        <p><?php echo (int)$item['quantity']; ?> × <?php echo e($item['price']); ?> ₽</p>
+                        <p>
+                            <?php echo e($item['age_rating']); ?> ·
+                            <?php echo (int)$item['quantity']; ?> × <?php echo e($item['price']); ?> ₽
+                        </p>
                     </div>
 
                     <b><?php echo number_format($item['price'] * $item['quantity'], 2, '.', ' '); ?> ₽</b>
@@ -183,6 +193,12 @@ $pageTitle = 'Оформление заказа — MangaShop';
                 <span>К оплате:</span>
                 <strong><?php echo number_format($total, 2, '.', ' '); ?> ₽</strong>
             </div>
+
+            <?php if ($hasAdultProducts): ?>
+                <div class="age-warning">
+                    В заказе есть товары 18+. Это только информационное предупреждение: при выдаче таких изданий может понадобиться подтверждение возраста.
+                </div>
+            <?php endif; ?>
 
             <form method="post">
                 <?php echo csrf_field(); ?>
