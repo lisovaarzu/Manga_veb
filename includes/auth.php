@@ -75,7 +75,7 @@ function requireCustomer()
 
 function e($value)
 {
-    return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+    return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
 }
 
 function product_image_url($filename)

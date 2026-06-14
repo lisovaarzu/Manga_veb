@@ -14,8 +14,7 @@ $stmt->execute(array($id));
 $product = $stmt->fetch();
 
 if (!$product) {
-    http_response_code(404);
-    echo 'Товар не найден';
+    require_once __DIR__ . '/404.php';
     exit;
 }
 
